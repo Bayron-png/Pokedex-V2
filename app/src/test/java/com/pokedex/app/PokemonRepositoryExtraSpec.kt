@@ -21,7 +21,7 @@ class PokemonRepositoryExtraSpec : FunSpec({
     )
 
     test("el Repository elimina los espacios al buscar por número") {
-        // Mock: La API falsa que responde cuando recibe el número 25.
+        // Dado: un Repository falso que devuelve una ficha de Pikachu.
         val api = mockk<PokeApi>()
 
         // Cada vez que el nombre sea 25, debe retornar la ficha de Pikachu
