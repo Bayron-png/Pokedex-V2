@@ -9,6 +9,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Test
 import retrofit2.Retrofit
@@ -21,6 +22,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 @OptIn(ExperimentalCoroutinesApi::class)
 class PokedexTest {
     private val ficha = PokemonDto(25, "pikachu", 4, 60, SpritesDto(null), listOf(PokemonTypeDto(1, TypeDto("electric"))))
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
     // Implementación falsa del contrato: cada prueba decide qué devolver o qué error lanzar.
     private fun api(block: suspend (String) -> PokemonDto) = object : PokeApi {
         override suspend fun obtenerPokemon(nombre: String) = block(nombre)

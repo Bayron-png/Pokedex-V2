@@ -7,21 +7,30 @@ import com.pokedex.app.data.model.TypeDto
 import com.pokedex.app.data.remote.PokeApi
 import com.pokedex.app.repository.PokemonRepository
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.io.IOException
 
 class EjemploMockKSpec : FunSpec({
+    isolationMode = IsolationMode.InstancePerTest
 
-    // Datos de ejemplo: una ficha de Charmander inventada por nosotros.
-    val ficha = PokemonDto(
-        4, "charmander", 6, 85,   // número, nombre, altura y peso
-        SpritesDto(null),         // sin imagen
-        listOf(PokemonTypeDto(1, TypeDto("fire")))
-    )
+    afterTest {
+        clearAllMocks()
+    }
+
+    // Datos de ejemplo: diferidos con `by lazy` para no instanciarse durante la fase de discovery.
+    val ficha by lazy {
+        PokemonDto(
+            4, "charmander", 6, 85,   // número, nombre, altura y peso
+            SpritesDto(null),         // sin imagen
+            listOf(PokemonTypeDto(1, TypeDto("fire")))
+        )
+    }
 
     // Ejemplo 1: programar una respuesta con coEvery ... returns.
     test("el doble devuelve la ficha que se le programó") {

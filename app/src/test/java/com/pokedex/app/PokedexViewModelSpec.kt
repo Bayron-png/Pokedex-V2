@@ -3,10 +3,12 @@ package com.pokedex.app
 import com.pokedex.app.data.model.*
 import com.pokedex.app.repository.PokemonRepository
 import com.pokedex.app.viewmodel.PokedexViewModel
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -25,14 +27,22 @@ import retrofit2.Response
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PokedexViewModelSpec : FunSpec({
-    val ficha = PokemonDto(25, "pikachu", 4, 60, SpritesDto(null), listOf(PokemonTypeDto(1, TypeDto("electric"))))
-    // Dispatcher de prueba: las corrutinas no avanzan hasta que la prueba lo ordena.
+    // Aislamiento por cada prueba: crea una instancia limpia para cada test("...")
+    isolationMode = IsolationMode.InstancePerTest
+
+    val ficha by lazy {
+        PokemonDto(25, "pikachu", 4, 60, SpritesDto(null), listOf(PokemonTypeDto(1, TypeDto("electric"))))
+    }
+    // Dispatcher de prueba nuevo para cada test.
     val dispatcher = StandardTestDispatcher()
 
     // viewModelScope necesita Dispatchers.Main, que no existe en una prueba de la JVM:
     // se reemplaza antes de cada prueba y se restaura después.
     beforeTest { Dispatchers.setMain(dispatcher) }
-    afterTest { Dispatchers.resetMain() }
+    afterTest {
+        Dispatchers.resetMain()
+        clearAllMocks()
+    }
 
     // Situación: la persona deja el campo en blanco y presiona Buscar.
     // Esperamos: aparece un mensaje de error y no se consulta nada.

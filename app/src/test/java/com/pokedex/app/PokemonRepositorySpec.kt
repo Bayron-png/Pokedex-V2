@@ -4,16 +4,26 @@ import com.pokedex.app.data.model.*
 import com.pokedex.app.data.remote.PokeApi
 import com.pokedex.app.repository.PokemonRepository
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.io.IOException
 
 class PokemonRepositorySpec : FunSpec({
-    // Dato de ejemplo que usarán todas las pruebas: la ficha de Pikachu.
-    val ficha = PokemonDto(25, "pikachu", 4, 60, SpritesDto(null), listOf(PokemonTypeDto(1, TypeDto("electric"))))
+    isolationMode = IsolationMode.InstancePerTest
+
+    afterTest {
+        clearAllMocks()
+    }
+
+    // Dato de ejemplo diferido con `by lazy`.
+    val ficha by lazy {
+        PokemonDto(25, "pikachu", 4, 60, SpritesDto(null), listOf(PokemonTypeDto(1, TypeDto("electric"))))
+    }
 
     // Situación: se busca escribiendo "  PIKACHU ".
     // Esperamos: la API recibe "pikachu", sin espacios y en minúsculas.
