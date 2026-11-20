@@ -3,6 +3,7 @@ package com.pokedex.app
 import com.pokedex.app.data.model.*
 import com.pokedex.app.repository.PokemonRepository
 import com.pokedex.app.viewmodel.PokedexViewModel
+import com.google.gson.JsonParseException
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
@@ -137,5 +138,28 @@ class PokedexViewModelExtraSpec : FunSpec({
         // El Repository se llamó una sola vez.
         coVerify(exactly = 1) { repo.buscar(any()) }
         vm.uiState.value.pokemon shouldBe ficha
+    }
+
+    // Punto 5
+    test("una respuesta con formato inválido muestra el mensaje de formato") {
+        val repo = mockk<PokemonRepository>()
+
+        // El Repository falla porque Gson no pudo interpretar la respuesta.
+        coEvery {
+            repo.buscar("pikachu")
+        } throws JsonParseException("JSON malformado")
+
+        val vm = PokedexViewModel(repo)
+        vm.actualizarConsulta("pikachu")
+
+        runTest(dispatcher) {
+            vm.buscar()
+            advanceUntilIdle()
+        }
+
+        // El ViewModel traduce la excepción a su mensaje de formato.
+        vm.uiState.value.error shouldBe "La respuesta no tiene el formato esperado."
+        vm.uiState.value.pokemon.shouldBeNull()
+        vm.uiState.value.cargando shouldBe false
     }
 })
