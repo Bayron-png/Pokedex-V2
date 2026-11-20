@@ -40,4 +40,18 @@ class PokemonRepositoryExtraSpec : FunSpec({
         // Verifica que la API recibió el número sin espacios.
         coVerify(exactly = 1) { api.obtenerPokemon("25") }
     }
+
+    test("buscar por número y luego por nombre llama a la API una sola vez") {
+        // Dado: la API solo sabe responder a "25".
+        val api = mockk<PokeApi>()
+        coEvery { api.obtenerPokemon("25") } returns ficha
+        val repo = PokemonRepository(api)
+
+        // Cuando: se busca por número y después por nombre.
+        repo.buscar("25") shouldBe ficha
+        repo.buscar("pikachu") shouldBe ficha
+
+        // Entonces: la segunda salió de la caché; la API se usó una sola vez.
+        coVerify(exactly = 1) { api.obtenerPokemon(any()) }
+    }
 })
